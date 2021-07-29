@@ -1,11 +1,14 @@
 package com.rhy.nettydemo.chat;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.DelimiterBasedFrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
+import io.netty.util.CharsetUtil;
 
 import java.util.Scanner;
 
@@ -29,17 +32,18 @@ public class ChatClient {
                         ChannelPipeline pipeline = channel.pipeline();
                         pipeline.addLast(new StringEncoder());
                         pipeline.addLast(new StringDecoder());
+                        pipeline.addLast(new DelimiterBasedFrameDecoder(1024, Unpooled.copiedBuffer(":P", CharsetUtil.UTF_8)));
                         pipeline.addLast(new ChatClientHandler());
                     }
                 });
-
-        ChannelFuture channelFuture = bootstrap.connect("127.0.0.1", 2000).sync();
+        //127.0.0.1
+        ChannelFuture channelFuture = bootstrap.connect("192.168.2.205", 2000).sync();
         Channel channel = channelFuture.channel();
         System.out.println("聊天室Client地址："+channel.localAddress());
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()){
             String msg = scanner.next();
-            channel.writeAndFlush(msg);
+            channel.writeAndFlush(msg+":P");
         }
 
     }
